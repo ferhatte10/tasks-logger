@@ -9,8 +9,7 @@
 
             createNewTask({
                 username: username,
-                task_value: task,
-                creation_date: new Date().toLocaleString()
+                task_value: task
             })
         })
     })
@@ -26,9 +25,9 @@
         }).then((response) => {
             return response.json()
         }).then((data) => {
-           if (data.success === "success" && data.message === "task already exists"){
+           if (data.message === "Task already exists"){
                alert("task already exists")
-           } else if (data.success === "success" && data.message === "task created"){
+           } else if (data.message === "Task created"){
                alert(data.message)
                window.location.href = "/tasks"
            }else{

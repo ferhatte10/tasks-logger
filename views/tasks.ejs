@@ -1,26 +1,88 @@
 <%- include('./partials/header'); %>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let btn = document.getElementById("delete_tasks")
-        btn.addEventListener("click", function(event) {
-            event.preventDefault()
-            console.log("click")
-            delete_all()
+    function edition_mode(id) {
+
+        let elm = document.getElementById(`task${id}_value`)
+        let elm_value = elm.value
+        elm.readOnly = false
+
+        elm.style.cssText = `border: 1px solid #ced4da !important; border-radius: 0.25rem !important;`
+        elm.focus()
+        elm.setSelectionRange(elm.value.length, elm.value.length)
+
+        elm.addEventListener("blur", function(data) {
+            elm.readOnly = true
+            elm.style.cssText = "color: black !important; border: none !important; background-color: transparent !important;"
+            if (data.target.value !== elm_value) {
+                elm_value = data.target.value
+                update_task(id, data.target.value,document.getElementById(`username_${id}`).innerHTML)
+            }
         })
-    })
+        elm.addEventListener("keyup", function(data) {
+            if (data.key === "Enter") {
+                elm.readOnly = true
+                elm.style.cssText = "color: black !important; border: none !important; background-color: transparent !important;"
+                if (data.target.value !== elm_value) {
+                    elm_value = data.target.value
+                    update_task(id, data.target.value,document.getElementById(`username_${id}`).innerHTML)
+                }
+            }
+        })
 
 
-    function delete_all() {
-        fetch("api/task", {
-            method: "DELETE"
+
+    }
+
+    function update_task(id, value,username) {
+        fetch(`api/task/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                task_value: value,
+                username: username
+            })
         }).then((response) => {
             return response.json()
         }).then((data) => {
+            if (data.message ==="Task already exists"){
+                alert(data.message)
+            }
             location.reload()
+
         }).catch((err) => {
             console.warn(err)
         })
+    }
 
+
+    function delete_task(id, all=false) {
+        if (all) {
+            if (confirm("Are you sure you want to delete all tasks?")) {
+                fetch(`api/task`, {
+                    method: "DELETE"
+                }).then((response) => {
+                    return response.json()
+                }).then((data) => {
+                    location.reload()
+                }).catch((err) => {
+                    console.warn(err)
+                })
+            }
+        } else {
+            if (confirm("Are you sure you want to delete this task?")) {
+                fetch(`api/task/${id}`, {
+                    method: "DELETE"
+                }).then((response) => {
+                    return response.json()
+                }).then((data) => {
+                    location.reload()
+                }).catch((err) => {
+                    console.warn(err)
+                })
+            }
+        }
     }
 </script>
 <main>
@@ -39,37 +101,56 @@
                  <th scope="col" class="align-middle">User</th>
                  <th scope="col" class="align-middle">Task</th>
                  <th scope="col" class="align-middle">Creation Date</th>
-    <!--             <th scope="col">Actions</th>-->
+                 <th scope="col">Actions</th>
              </tr>
              </thead>
              <tbody>
              <% tasks.forEach(function(task) { %>
                  <tr class="fw-normal">
                      <th>
-                         <span class="ms-2"><%= task.username%></span>
+                         <span class="ms-2" id="username_<%=task.id%>"><%= task.username%></span>
                      </th>
                      <td class="align-middle">
-                         <span><%=task.task_value%></span>
+                         <input id="task<%=task.id%>_value" type="text" class="form-control task_value" name="task_value" value="<%=task.task_value%>" readonly >
                      </td>
                      <td class="align-middle">
-                         <span><%= new Date(task.creation_date).toLocaleString('fr-FR', { month: 'long', day: 'numeric',year :'numeric',hour:'numeric',minute:'numeric',hour12: false }) %></span>
+                         <span><%= new Date(task.createdAt).toLocaleString('fr-FR', { month: 'long', day: 'numeric',year :'numeric',hour:'numeric',minute:'numeric',hour12: false }) %></span>
                      </td>
-                     <!--             <td class="align-middle">
-                                      <a href="#!" data-mdb-toggle="tooltip" title="Remove"><i
-                                                  class="fas fa-trash-alt fa-lg text-warning"></i></a>
-                                  </td>-->
+                     <td class="align-middle">
+                        <a  data-mdb-toggle="tooltip" >
+                            <i id="cursor" onclick="delete_task(<%= task.id %>)" class="fas fa-trash-alt fa-lg text-warning text-danger" title="Remove"></i><i
+                                    id="cursor" onclick="edition_mode(<%=task.id%>,<%=task.id%>)" class="fa-solid fa-pen-to-square m-1" title="Edit"></i>
+                        </a>
+                     </td>
                  </tr>
              <% }); %>
 
              </tbody>
          </table>
      <%}%>
-     <button class="ui button mt-2" id="delete_tasks" type="button" <% if (tasks.length ===0) { %>disabled<%}%>>Delete all tasks</button>
+
+     <% if (tasks.length !==0) { %>
+         <button class="ui button mt-2" onclick="delete_task(0,true)" type="button" >Delete all tasks</button>
+     <%}%>
+
  </div>
 </main>
 <style>
     li {
         font-size:1rem;
+    }
+    #cursor{
+        cursor: pointer;
+    }
+    .task_value{
+        color: black !important;
+        border: none !important;
+        background-color: transparent !important;
+    }
+    .task_value:focus {
+        border-color: inherit !important;
+        -webkit-box-shadow: none !important;
+        box-shadow: none !important;
     }
 
 </style>
