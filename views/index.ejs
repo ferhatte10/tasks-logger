@@ -1,0 +1,66 @@
+<%- include('./partials/header'); %>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let form = document.getElementById("taskForm")
+        form.addEventListener("submit", function(event) {
+            event.preventDefault()
+            let username = document.getElementById("username").value
+            let task = document.getElementById("task").value
+
+            createNewTask({
+                username: username,
+                task_value: task,
+                creation_date: new Date().toLocaleString()
+            })
+        })
+    })
+
+
+    function createNewTask(data) {
+        fetch("api/task", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams(data)
+        }).then((response) => {
+            return response.json()
+        }).then((data) => {
+           if (data.success === "success" && data.message === "task already exists"){
+               alert("task already exists")
+           } else if (data.success === "success" && data.message === "task created"){
+               alert(data.message)
+               window.location.href = "/tasks"
+           }else{
+               alert(data.message)
+           }
+        }).catch((err) => {
+            console.warn(err)
+        })
+
+    }
+</script>
+<main>
+ <div class="ui segment">
+     <form class="ui form" id="taskForm">
+         <div class="two fields">
+             <div class="field">
+                 <label for="username">Username</label>
+                 <input id="username" type="text" name="username" placeholder="ex : marcADV" required autocomplete="off">
+             </div>
+             <div class="field">
+                 <label for="task">Task</label>
+                 <input id="task" type="text" name="task_value" placeholder="ex : creating ui/ux" required autocomplete="off">
+             </div>
+         </div>
+         <button class="ui button" type="submit">Create</button>
+     </form>
+ </div>
+</main>
+
+<footer>
+  <%- include('./partials/footer'); %>
+</footer>
+
+</body> 
+</html>

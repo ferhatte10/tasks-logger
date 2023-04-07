@@ -1,0 +1,82 @@
+<%- include('./partials/header'); %>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let btn = document.getElementById("delete_tasks")
+        btn.addEventListener("click", function(event) {
+            event.preventDefault()
+            console.log("click")
+            delete_all()
+        })
+    })
+
+
+    function delete_all() {
+        fetch("api/task", {
+            method: "DELETE"
+        }).then((response) => {
+            return response.json()
+        }).then((data) => {
+            location.reload()
+        }).catch((err) => {
+            console.warn(err)
+        })
+
+    }
+</script>
+<main>
+ <div class="ui segment">
+     <div class="text-center pt-3 pb-2">
+         <img src="/logoImages/check1.webp"
+              alt="Check" width="60">
+         <h2 class="my-4">Task List</h2>
+     </div>
+     <% if (tasks.length === 0) {%>
+         <p><strong>There is no task created yet</strong></p>
+     <%}else{%>
+         <table class="table mb-0">
+             <thead>
+             <tr>
+                 <th scope="col" class="align-middle">User</th>
+                 <th scope="col" class="align-middle">Task</th>
+                 <th scope="col" class="align-middle">Creation Date</th>
+    <!--             <th scope="col">Actions</th>-->
+             </tr>
+             </thead>
+             <tbody>
+             <% tasks.forEach(function(task) { %>
+                 <tr class="fw-normal">
+                     <th>
+                         <span class="ms-2"><%= task.username%></span>
+                     </th>
+                     <td class="align-middle">
+                         <span><%=task.task_value%></span>
+                     </td>
+                     <td class="align-middle">
+                         <span><%= new Date(task.creation_date).toLocaleString('fr-FR', { month: 'long', day: 'numeric',year :'numeric',hour:'numeric',minute:'numeric',hour12: false }) %></span>
+                     </td>
+                     <!--             <td class="align-middle">
+                                      <a href="#!" data-mdb-toggle="tooltip" title="Remove"><i
+                                                  class="fas fa-trash-alt fa-lg text-warning"></i></a>
+                                  </td>-->
+                 </tr>
+             <% }); %>
+
+             </tbody>
+         </table>
+     <%}%>
+     <button class="ui button mt-2" id="delete_tasks" type="button" <% if (tasks.length ===0) { %>disabled<%}%>>Delete all tasks</button>
+ </div>
+</main>
+<style>
+    li {
+        font-size:1rem;
+    }
+
+</style>
+
+<footer>
+  <%- include('./partials/footer'); %>
+</footer>
+
+</body> 
+</html>
